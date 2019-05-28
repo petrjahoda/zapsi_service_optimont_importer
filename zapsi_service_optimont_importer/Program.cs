@@ -41,7 +41,12 @@ namespace zapsi_service_optimont_importer {
 
 
         static void Main() {
-            Console.WriteLine("OPTIMONT DATA IMPORTER");
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
+                Console.WriteLine(CyanColor + "  >> OPTIMONT FIS IMPORTER ");
+            } else {
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine("  >> OPTIMONT FIS IMPORTER ");
+            }
             var outputPath = CreateLogFileIfNotExists("0-main.txt");
             using (CreateLogger(outputPath, out var logger)) {
                 CheckOsPlatform(logger);
