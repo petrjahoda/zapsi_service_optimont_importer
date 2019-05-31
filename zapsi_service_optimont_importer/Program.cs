@@ -111,7 +111,7 @@ namespace zapsi_service_optimont_importer {
                 connection.Open();
                 var command = connection.CreateCommand();
                 command.CommandText = $"INSERT INTO `zapsi2`.`order` (`Name`, `Barcode`, `ProductID`, `OrderStatusID`, `CountRequested`, `WorkplaceID`) " +
-                                      $"VALUES ('{order.Oid}', '{order.Oid}', {order.ProductId}, DEFAULT, {order.RequestedAmount}, {order.WorkplaceId});";
+                                      $"VALUES ('{order.Oid}', '{order.Oid}', {ProductId}, DEFAULT, {order.RequestedAmount}, {WorkplaceID});";
                 try {
                     command.ExecuteNonQuery();
                     LogInfo($"[  {order.Oid} ] --INF-- Added from FIS to Zapsi", logger);
