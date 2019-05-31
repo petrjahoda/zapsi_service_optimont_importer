@@ -104,14 +104,14 @@ namespace zapsi_service_optimont_importer {
         }
 
         private static void CreateNewOrderInZapsi(Order order, ILogger logger) {
-            var ProductId = GetProductIdFromFisTableFor(order, logger);
-            ProductId = GetProductIdFromZapsiProductTable(ProductId, logger);
+            var productId = GetProductIdFromFisTableFor(order, logger);
+            productId = GetProductIdFromZapsiProductTable(productId, logger);
             var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
             try {
                 connection.Open();
                 var command = connection.CreateCommand();
                 command.CommandText = $"INSERT INTO `zapsi2`.`order` (`Name`, `Barcode`, `ProductID`, `OrderStatusID`, `CountRequested`, `WorkplaceID`) " +
-                                      $"VALUES ('{order.Oid}', '{order.Oid}', {ProductId}, DEFAULT, {order.RequestedAmount}, NULL);";
+                                      $"VALUES ('{order.Oid}', '{order.Oid}', {productId}, DEFAULT, {order.RequestedAmount}, NULL);";
                 try {
                     command.ExecuteNonQuery();
                     LogInfo($"[  {order.Oid} ] --INF-- Added from FIS to Zapsi", logger);
