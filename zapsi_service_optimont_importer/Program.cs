@@ -104,6 +104,8 @@ namespace zapsi_service_optimont_importer {
         }
 
         private static void CreateNewOrderInZapsi(Order order, ILogger logger) {
+            var ProductId = GetProductIdFor(order, logger);
+            var WorkplaceID = GetWorkplaceIdFor(order, logger);
             var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
             try {
                 connection.Open();
@@ -125,6 +127,64 @@ namespace zapsi_service_optimont_importer {
             } finally {
                 connection.Dispose();
             }
+        }
+
+        private static int GetWorkplaceIdFor(Order order, ILogger logger) {
+            var workplaceId = 0;
+            var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
+            try {
+                connection.Open();
+                var selectQuery = $"select * from zapsi2.workplace where Code = {order.WorkplaceId}";
+                var command = new MySqlCommand(selectQuery, connection);
+                try {
+                    var reader = command.ExecuteReader();
+                    while (reader.Read()) {
+                        workplaceId = Convert.ToInt32(reader["OID"]);
+                    }
+                    reader.Close();
+                    reader.Dispose();
+                } catch (Exception error) {
+                    LogError("[ MAIN ] --ERR-- Problem reading workplace for order: " + error.Message + selectQuery, logger);
+                } finally {
+                    command.Dispose();
+                }
+
+                connection.Close();
+            } catch (Exception error) {
+                LogError("[ MAIN ] --ERR-- Problem with database: " + error.Message, logger);
+            } finally {
+                connection.Dispose();
+            }
+            return workplaceId;
+        }
+
+        private static int GetProductIdFor(Order order, ILogger logger) {
+            var productId = 0;
+            var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
+            try {
+                connection.Open();
+                var selectQuery = $"select * from zapsi2.product where Barcode = {order.ProductId}";
+                var command = new MySqlCommand(selectQuery, connection);
+                try {
+                    var reader = command.ExecuteReader();
+                    while (reader.Read()) {
+                        productId = Convert.ToInt32(reader["OID"]);
+                    }
+                    reader.Close();
+                    reader.Dispose();
+                } catch (Exception error) {
+                    LogError("[ MAIN ] --ERR-- Problem reading product for order: " + error.Message + selectQuery, logger);
+                } finally {
+                    command.Dispose();
+                }
+
+                connection.Close();
+            } catch (Exception error) {
+                LogError("[ MAIN ] --ERR-- Problem with database: " + error.Message, logger);
+            } finally {
+                connection.Dispose();
+            }
+            return productId;
         }
 
         private static List<string> DownloadActualOrdersFromZapsi(ILogger logger) {
@@ -301,7 +361,8 @@ namespace zapsi_service_optimont_importer {
             LogInfo($"[ MAIN ] --INF-- Comparing users", logger);
             foreach (var user in fisUsers) {
                 if (zapsiUsers.Contains(user.Oid.ToString())) {
-                    UpdateUserInZapsi(user, logger);
+//                    DISABLED, will be ENABLED when RFID is inserted into fis_user
+//                    UpdateUserInZapsi(user, logger);
                 } else {
                     CreateNewUserInZapsi(user, logger);
                 }

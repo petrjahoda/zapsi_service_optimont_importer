@@ -1,0 +1,188 @@
+version: '3.6'
+services:
+  portainer:
+    networks:
+      - zapsi
+    container_name: portainer
+    image: 'portainer/portainer:latest'
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: '10'
+    volumes:
+      - 'portainer_data:/data'
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    ports:
+      - '9000:9000'
+    restart: always
+  zapsidatabase:
+    networks:
+      - zapsi
+    container_name: zapsidatabase
+    image: 'petrjahoda/zapsidatabase:latest'
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: '10'
+    volumes:
+      - 'zapsidb:/var/lib/mysql'
+      - 'zapsidblogs:/var/log/mysql'
+    ports:
+      - '3306:3306'
+    restart: always
+    environment: []
+  stateserver:
+    networks:
+      - zapsi
+    container_name: stateservercore
+    image: 'petrjahoda/stateservercore:latest'
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: '10'
+    depends_on:
+      - zapsidatabase
+    volumes:
+      - 'stateserver:/publish'
+    restart: always
+  printserver:
+    networks:
+      - zapsi
+    container_name: printservercore
+    image: 'petrjahoda/printservercore:latest'
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: '10'
+    depends_on:
+      - zapsidatabase
+    volumes:
+      - 'printserver:/publish'
+    restart: always
+  terminalserver:
+    networks:
+      - zapsi
+    container_name: terminalservercore
+    image: 'petrjahoda/terminalservercore:latest'
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: '10'
+    depends_on:
+      - zapsidatabase
+    volumes:
+      - 'terminalserver:/publish'
+    restart: always
+  zapsiserver:
+    networks:
+      - zapsi
+    container_name: zapsiservercore
+    image: 'petrjahoda/zapsiservercore:latest'
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: '10'
+    depends_on:
+      - zapsidatabase
+    volumes:
+      - 'zapsiserver:/publish'
+    restart: always
+  alarmserver:
+    networks:
+      - zapsi
+    container_name: alarmservercore
+    image: 'petrjahoda/alarmservercore:latest'
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: '10'
+    depends_on:
+      - zapsidatabase
+    volumes:
+      - 'alarmserver:/publish'
+    restart: always
+  plcserver:
+    networks:
+      - zapsi
+    container_name: plcservercore
+    image: 'petrjahoda/plcservercore:latest'
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: '10'
+    depends_on:
+      - zapsidatabase
+    volumes:
+      - 'plcserver:/publish'
+    restart: always
+  fisimporter:
+    networks:
+      - zapsi
+    container_name: fisimporter
+    image: 'petrjahoda/optimontfisimporter:latest'
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: '10'
+    depends_on:
+      - zapsidatabase
+    volumes:
+      - 'fisimporter:/publish'
+    restart: always    
+  zapsiweb:
+    networks:
+      - zapsi
+    container_name: zapsiweb
+    image: 'petrjahoda/zapsiweb:latest'
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: '10'
+    ports:
+      - '80:80'
+    volumes:
+      - 'zapsiweb:/var'
+    restart: always
+  reportserver:
+    networks:
+      - zapsi
+    container_name: reportserver
+    image: 'petrjahoda/reportserver:latest'
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: '10'
+    ports:
+      - '3000:3000'
+    volumes:
+      - 'reportserver:/metabase-data'
+    environment:
+      - MB_DB_FILE=/metabase-data/metabase.db
+    restart: always
+volumes:
+  zapsidb: null
+  zapsidblogs: null
+  zapsiweb: null
+  alarmserver: null
+  generatorserver: null
+  stateserver: null
+  terminalserver: null
+  zapsiserver: null
+  plcserver: null
+  reportserver: null
+  printserver: null
+  portainer_data: null
+  fisimporter: null
+networks:
+  zapsi: null
