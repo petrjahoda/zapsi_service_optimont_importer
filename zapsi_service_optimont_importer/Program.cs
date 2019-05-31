@@ -13,7 +13,7 @@ using Newtonsoft.Json;
 
 namespace zapsi_service_optimont_importer {
     class Program {
-        private const string BuildDate = "2019.2.2.28";
+        private const string BuildDate = "2019.2.2.31";
         private const string DataFolder = "Logs";
         private const string RedColor = "\u001b[31;1m";
         private const string YellowColor = "\u001b[33;1m";
@@ -104,14 +104,14 @@ namespace zapsi_service_optimont_importer {
         }
 
         private static void CreateNewOrderInZapsi(Order order, ILogger logger) {
-            var ProductId = GetProductIdFor(order, logger);
-            var WorkplaceID = GetWorkplaceIdFor(order, logger);
+            var ProductId = GetProductIdFromFisTableFor(order, logger);
+            ProductId = GetProductIdFromZapsiProductTable(ProductId, logger);
             var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
             try {
                 connection.Open();
                 var command = connection.CreateCommand();
                 command.CommandText = $"INSERT INTO `zapsi2`.`order` (`Name`, `Barcode`, `ProductID`, `OrderStatusID`, `CountRequested`, `WorkplaceID`) " +
-                                      $"VALUES ('{order.Oid}', '{order.Oid}', {ProductId}, DEFAULT, {order.RequestedAmount}, {WorkplaceID});";
+                                      $"VALUES ('{order.Oid}', '{order.Oid}', {ProductId}, DEFAULT, {order.RequestedAmount}, NULL);";
                 try {
                     command.ExecuteNonQuery();
                     LogInfo($"[  {order.Oid} ] --INF-- Added from FIS to Zapsi", logger);
@@ -129,22 +129,23 @@ namespace zapsi_service_optimont_importer {
             }
         }
 
-        private static int GetWorkplaceIdFor(Order order, ILogger logger) {
-            var workplaceId = 0;
+        private static int GetProductIdFromZapsiProductTable(int productId, ILogger logger) {
             var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
             try {
                 connection.Open();
-                var selectQuery = $"select * from zapsi2.workplace where Code = {order.WorkplaceId}";
+                var selectQuery = $"select * from zapsi2.product where Barcode = {productId}";
+                Console.WriteLine(selectQuery);
                 var command = new MySqlCommand(selectQuery, connection);
                 try {
                     var reader = command.ExecuteReader();
                     while (reader.Read()) {
-                        workplaceId = Convert.ToInt32(reader["OID"]);
+                        productId = Convert.ToInt32(reader["Oid"]);
                     }
                     reader.Close();
                     reader.Dispose();
+                    
                 } catch (Exception error) {
-                    LogError("[ MAIN ] --ERR-- Problem reading workplace for order: " + error.Message + selectQuery, logger);
+                    LogError("[ MAIN ] --ERR-- Problem reading product for order: " + error.Message + selectQuery, logger);
                 } finally {
                     command.Dispose();
                 }
@@ -155,23 +156,26 @@ namespace zapsi_service_optimont_importer {
             } finally {
                 connection.Dispose();
             }
-            return workplaceId;
+            return productId;
         }
 
-        private static int GetProductIdFor(Order order, ILogger logger) {
+       
+        private static int GetProductIdFromFisTableFor(Order order, ILogger logger) {
             var productId = 0;
             var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
             try {
                 connection.Open();
-                var selectQuery = $"select * from zapsi2.product where Barcode = {order.ProductId}";
+                var selectQuery = $"select * from zapsi2.fis_product where IDVM = {order.ProductId}";
+                Console.WriteLine(selectQuery);
                 var command = new MySqlCommand(selectQuery, connection);
                 try {
                     var reader = command.ExecuteReader();
                     while (reader.Read()) {
-                        productId = Convert.ToInt32(reader["OID"]);
+                        productId = Convert.ToInt32(reader["ArtNr"]);
                     }
                     reader.Close();
                     reader.Dispose();
+                    
                 } catch (Exception error) {
                     LogError("[ MAIN ] --ERR-- Problem reading product for order: " + error.Message + selectQuery, logger);
                 } finally {
@@ -257,7 +261,7 @@ namespace zapsi_service_optimont_importer {
             var fisProducts = DownloadActualProductsFromFis(logger);
             LogInfo($"[ MAIN ] --INF-- Downloading products from Zapsi", logger);
             var zapsiProducts = DownloadActualProductsFromZapsi(logger);
-            LogInfo($"[ MAIN ] --INF-- Comparing products", logger);
+            LogInfo($"[ MAIN ] --INF-- Comparing products: " + fisProducts.Count + "-" + zapsiProducts.Count, logger);
             foreach (var product in fisProducts) {
                 if (!zapsiProducts.Contains(product.ArtNr)) {
                     CreateNewProductInZapsi(product, logger);
