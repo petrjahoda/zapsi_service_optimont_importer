@@ -95,9 +95,10 @@ namespace zapsi_service_optimont_importer {
             var fisOrders = DownloadActualOrdersFromFis(logger);
             LogInfo($"[ MAIN ] --INF-- Downloading orders from Zapsi", logger);
             var zapsiOrders = DownloadActualOrdersFromZapsi(logger);
-            LogInfo($"[ MAIN ] --INF-- Comparing orders", logger);
+            LogInfo($"[ MAIN ] --INF-- Comparing orders: " + fisOrders.Count + "-" + zapsiOrders.Count, logger);
             foreach (var order in fisOrders) {
                 if (!zapsiOrders.Contains(order.Oid.ToString())) {
+                    LogInfo($"[  {order.Oid} ] --INF-- Adding new order: " + order.Oid, logger);
                     CreateNewOrderInZapsi(order, logger);
                 }
             }
@@ -111,7 +112,7 @@ namespace zapsi_service_optimont_importer {
                 connection.Open();
                 var command = connection.CreateCommand();
                 command.CommandText = $"INSERT INTO `zapsi2`.`order` (`Name`, `Barcode`, `ProductID`, `OrderStatusID`, `CountRequested`, `WorkplaceID`) " +
-                                      $"VALUES ('{order.Oid}', '{order.Oid}', {productId}, DEFAULT, {order.RequestedAmount}, NULL);";
+                                      $"VALUES ('{order.Oid}', '{order.Barcode}', {productId}, DEFAULT, {order.RequestedAmount}, NULL);";
                 try {
                     command.ExecuteNonQuery();
                     LogInfo($"[  {order.Oid} ] --INF-- Added from FIS to Zapsi", logger);
@@ -166,7 +167,6 @@ namespace zapsi_service_optimont_importer {
             try {
                 connection.Open();
                 var selectQuery = $"select * from zapsi2.fis_product where IDVM = {order.ProductId}";
-                Console.WriteLine(selectQuery);
                 var command = new MySqlCommand(selectQuery, connection);
                 try {
                     var reader = command.ExecuteReader();
@@ -235,6 +235,7 @@ namespace zapsi_service_optimont_importer {
                         order.Oid = Convert.ToInt32(reader["ID"]);
                         order.ProductId = Convert.ToString(reader["IDVM"]);
                         order.WorkplaceId = Convert.ToString(reader["IDVC"]);
+                        order.Barcode = Convert.ToString(reader["IDVC"]);
                         order.RequestedAmount = Convert.ToString(reader["Mnozstvi"]);
                         orders.Add(order);
                     }
