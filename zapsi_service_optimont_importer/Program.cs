@@ -13,7 +13,7 @@ using Newtonsoft.Json;
 
 namespace zapsi_service_optimont_importer {
     class Program {
-        private const string BuildDate = "2019.2.2.31";
+        private const string BuildDate = "2019.3.2.19";
         private const string DataFolder = "Logs";
         private const string RedColor = "\u001b[31;1m";
         private const string YellowColor = "\u001b[33;1m";
@@ -97,8 +97,8 @@ namespace zapsi_service_optimont_importer {
             var zapsiOrders = DownloadActualOrdersFromZapsi(logger);
             LogInfo($"[ MAIN ] --INF-- Comparing orders: " + fisOrders.Count + "-" + zapsiOrders.Count, logger);
             foreach (var order in fisOrders) {
-                if (!zapsiOrders.Contains(order.Oid.ToString())) {
-                    LogInfo($"[  {order.Oid} ] --INF-- Adding new order: " + order.Oid, logger);
+                if (!zapsiOrders.Contains(order.Barcode.ToString())) {
+                    LogInfo($"[ MAIN ] --INF-- Adding order: {order.Oid} with barcode{order.Barcode}", logger);
                     CreateNewOrderInZapsi(order, logger);
                 }
             }
@@ -112,7 +112,7 @@ namespace zapsi_service_optimont_importer {
                 connection.Open();
                 var command = connection.CreateCommand();
                 command.CommandText = $"INSERT INTO `zapsi2`.`order` (`Name`, `Barcode`, `ProductID`, `OrderStatusID`, `CountRequested`, `WorkplaceID`) " +
-                                      $"VALUES ('{order.Oid}', '{order.Barcode}', {productId}, DEFAULT, {order.RequestedAmount}, NULL);";
+                                      $"VALUES ('{order.Barcode}', '{order.Barcode}', {productId}, DEFAULT, {order.RequestedAmount}, NULL);";
                 try {
                     command.ExecuteNonQuery();
                     LogInfo($"[  {order.Oid} ] --INF-- Added from FIS to Zapsi", logger);
@@ -232,11 +232,13 @@ namespace zapsi_service_optimont_importer {
                     var reader = command.ExecuteReader();
                     while (reader.Read()) {
                         var order = new Order();
-                        order.Oid = Convert.ToInt32(reader["ID"]);
+                        order.Oid = Convert.ToInt32(reader["IDVC"]);
                         order.ProductId = Convert.ToString(reader["IDVM"]);
                         order.WorkplaceId = Convert.ToString(reader["IDVC"]);
                         order.Barcode = Convert.ToString(reader["IDVC"]);
                         order.RequestedAmount = Convert.ToString(reader["Mnozstvi"]);
+                        LogInfo($"[ MAIN ] --INF-- From FIS downloaded order: {order.Oid} with barcode{order.Barcode}", logger);
+
                         orders.Add(order);
                     }
                     reader.Close();
