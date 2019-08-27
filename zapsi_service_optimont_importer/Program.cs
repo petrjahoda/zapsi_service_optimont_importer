@@ -13,7 +13,7 @@ using Newtonsoft.Json;
 
 namespace zapsi_service_optimont_importer {
     class Program {
-        private const string BuildDate = "2019.3.2.19";
+        private const string BuildDate = "2019.3.2.27";
         private const string DataFolder = "Logs";
         private const string RedColor = "\u001b[31;1m";
         private const string YellowColor = "\u001b[33;1m";
@@ -65,6 +65,8 @@ namespace zapsi_service_optimont_importer {
                         TransferProducts(logger);
                         LogInfo($"[ MAIN ] --INF-- Transferring orders", logger);
                         TransferOrders(logger);
+                        LogInfo($"[ MAIN ] --INF-- Updating fis_production table", logger);
+                        UpdateFisProductionTable(logger);
                         LogInfo($"[ MAIN ] --INF-- Deleting old log data", logger);
                         DeleteOldLogFiles(logger);
                         _loopIsRunning = false;
@@ -73,6 +75,229 @@ namespace zapsi_service_optimont_importer {
                 };
                 RunTimer(timer);
             }
+        }
+
+        private static void UpdateFisProductionTable(ILogger logger) {
+            LogInfo($"[ MAIN ] --INF-- Downloading latest imported order from fis_production", logger);
+            var latestImportedterminalInputOrderId = DownloadLatestImportedOrderFromFisTable(logger);
+            LogInfo($"[ MAIN ] --INF-- Downloading orders from Zapsi", logger);
+            var newOrders = DownloadNewOrdersFromZapsi(latestImportedterminalInputOrderId, logger);
+            LogInfo($"[ MAIN ] --INF-- Updating orders", logger);
+            if (newOrders.Any()) {
+                UpdateOrdersData(newOrders, logger);
+            }
+            foreach (var order in newOrders) {
+                LogInfo($"[ MAIN ] --INF-- Adding order: {order.Id}", logger);
+                CreateNewOrderInFisTable(order, logger);
+            }
+        }
+
+        private static void CreateNewOrderInFisTable(FisImportOrder order, ILogger logger) {
+            var startDate = $"{order.DTS:yyyy-MM-dd HH:mm:ss.fff}";
+            var endDate = $"{order.DTE:yyyy-MM-dd HH:mm:ss.fff}";
+            var okCount = Convert.ToInt32(order.TotalCount) - Convert.ToInt32(order.NOK);
+            var okInKg = "NULL";
+            if (order.KgOK.Length > 0) {
+                try {
+                    okInKg = order.KgOK.Substring(6);
+                } catch (Exception e) {
+                    LogError($"[ --ERR-- Problem parsing kg: {e.Message}, {order.KgOK}", logger);
+                }
+            }
+
+            var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
+            try {
+                connection.Open();
+                var command = connection.CreateCommand();
+                command.CommandText =
+                    $"INSERT INTO `zapsi2`.`fis_production` (`TerminalInputOrderId`, `DatumCasOd`, `DatumCasDo`, `IDZ`, `IDVC`, `IDS`, `IDOper`, `MnozstviOK`, `MnozstviNOK`, `KgOK`, `KgNOK`) " +
+                    $"VALUES ('{order.TerminalInputOrderId}', '{startDate}', '{endDate}', '{order.IDZ}', {order.IDVC}, {order.IDS}, NULL, {okCount}, {order.NOK}, {okInKg}, NULL);";
+                try {
+                    command.ExecuteNonQuery();
+                } catch (Exception error) {
+                    LogError($"[ --ERR-- Problem inserting into database: {error.Message}{command.CommandText}", logger);
+                } finally {
+                    command.Dispose();
+                }
+
+                connection.Close();
+            } catch (Exception error) {
+                LogError("[ MAIN ] --ERR-- Problem with database: " + error.Message, logger);
+            } finally {
+                connection.Dispose();
+            }
+        }
+
+        private static void UpdateOrdersData(IEnumerable<FisImportOrder> newOrders, ILogger logger) {
+            foreach (var order in newOrders) {
+                string userUpdate = GetUserFromZapsiData(order.IDZ, logger);
+                string orderUpdate = GetOrderFromZapsiData(order.IDVC, logger);
+                string workplaceUpdate = GetWorkplaceFromZapsiData(order.IDS, logger);
+                order.IDZ = userUpdate;
+                order.IDVC = orderUpdate;
+                order.IDS = workplaceUpdate;
+            }
+        }
+
+        private static string GetWorkplaceFromZapsiData(string terminalId, ILogger logger) {
+            var code = "0";
+            var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
+            try {
+                connection.Open();
+                var selectQuery = $"select * from zapsi2.workplace where DeviceID={terminalId}";
+                var command = new MySqlCommand(selectQuery, connection);
+                try {
+                    var reader = command.ExecuteReader();
+                    if (reader.Read()) {
+                        code = Convert.ToString(reader["Code"]);
+                    }
+                    reader.Close();
+                    reader.Dispose();
+                } catch (Exception error) {
+                    LogError("[ MAIN ] --ERR-- Problem reading from user table: " + error.Message + selectQuery, logger);
+                } finally {
+                    command.Dispose();
+                }
+
+                connection.Close();
+            } catch (Exception error) {
+                LogError("[ MAIN ] --ERR-- Problem with database: " + error.Message, logger);
+            } finally {
+                connection.Dispose();
+            }
+
+            return code;
+        }
+
+        private static string GetOrderFromZapsiData(string barcode, ILogger logger) {
+            var orderId = "0";
+            var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
+            try {
+                connection.Open();
+                var selectQuery = $"select * from zapsi2.order where OID={barcode}";
+                var command = new MySqlCommand(selectQuery, connection);
+                try {
+                    var reader = command.ExecuteReader();
+                    if (reader.Read()) {
+                        orderId = Convert.ToString(reader["Barcode"]);
+                    }
+                    reader.Close();
+                    reader.Dispose();
+                } catch (Exception error) {
+                    LogError("[ MAIN ] --ERR-- Problem reading from user table: " + error.Message + selectQuery, logger);
+                } finally {
+                    command.Dispose();
+                }
+
+                connection.Close();
+            } catch (Exception error) {
+                LogError("[ MAIN ] --ERR-- Problem with database: " + error.Message, logger);
+            } finally {
+                connection.Dispose();
+            }
+
+            return orderId;
+        }
+
+        private static string GetUserFromZapsiData(string userId, ILogger logger) {
+            var userLogin = "0";
+            var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
+            try {
+                connection.Open();
+                var selectQuery = $"select * from zapsi2.user where OID={userId}";
+                var command = new MySqlCommand(selectQuery, connection);
+                try {
+                    var reader = command.ExecuteReader();
+                    if (reader.Read()) {
+                        userLogin = Convert.ToString(reader["Login"]);
+                    }
+                    reader.Close();
+                    reader.Dispose();
+                } catch (Exception error) {
+                    LogError("[ MAIN ] --ERR-- Problem reading from user table: " + error.Message + selectQuery, logger);
+                } finally {
+                    command.Dispose();
+                }
+
+                connection.Close();
+            } catch (Exception error) {
+                LogError("[ MAIN ] --ERR-- Problem with database: " + error.Message, logger);
+            } finally {
+                connection.Dispose();
+            }
+
+            return userLogin;
+        }
+
+        private static IEnumerable<FisImportOrder> DownloadNewOrdersFromZapsi(string latestImporterOrder, ILogger logger) {
+            var orders = new List<FisImportOrder>();
+            var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
+            try {
+                connection.Open();
+                var selectQuery = $"select * from zapsi2.terminal_input_order where OID>{latestImporterOrder}";
+                var command = new MySqlCommand(selectQuery, connection);
+                try {
+                    var reader = command.ExecuteReader();
+                    while (reader.Read()) {
+                        var orderToImport = new FisImportOrder();
+                        orderToImport.TerminalInputOrderId = Convert.ToString(reader["OID"]);
+                        orderToImport.DTS = Convert.ToDateTime(reader["DTS"]);
+                        orderToImport.DTE = Convert.ToDateTime(reader["DTE"]);
+                        orderToImport.IDVC = Convert.ToString(reader["OrderID"]);
+                        orderToImport.IDZ = Convert.ToString(reader["UserID"]);
+                        orderToImport.IDS = Convert.ToString(reader["DeviceID"]);
+                        orderToImport.TotalCount = Convert.ToString(reader["Count"]);
+                        orderToImport.NOK = Convert.ToString(reader["Fail"]);
+                        orderToImport.KgOK = Convert.ToString(reader["Note"]);
+                        orders.Add(orderToImport);
+                    }
+                    reader.Close();
+                    reader.Dispose();
+                } catch (Exception error) {
+                    LogError("[ MAIN ] --ERR-- Problem reading orders from database: " + error.Message + selectQuery, logger);
+                } finally {
+                    command.Dispose();
+                }
+
+                connection.Close();
+            } catch (Exception error) {
+                LogError("[ MAIN ] --ERR-- Problem with database: " + error.Message, logger);
+            } finally {
+                connection.Dispose();
+            }
+
+            return orders;
+        }
+
+        private static string DownloadLatestImportedOrderFromFisTable(ILogger logger) {
+            var latestTerminalInputOrderId = "0";
+            var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
+            try {
+                connection.Open();
+                var selectQuery = "select * from zapsi2.fis_production order by Id desc limit 1";
+                var command = new MySqlCommand(selectQuery, connection);
+                try {
+                    var reader = command.ExecuteReader();
+                    if (reader.Read()) {
+                        latestTerminalInputOrderId = Convert.ToString(reader["TerminalInputOrderId"]);
+                        LogInfo($"[ MAIN ] --INF-- Downloaded latest record from fis_table is {latestTerminalInputOrderId}", logger);
+                    }
+                    reader.Close();
+                    reader.Dispose();
+                } catch (Exception error) {
+                    LogError("[ MAIN ] --ERR-- Problem reading fis_production table: " + error.Message + selectQuery, logger);
+                } finally {
+                    command.Dispose();
+                }
+
+                connection.Close();
+            } catch (Exception error) {
+                LogError("[ MAIN ] --ERR-- Problem with database: " + error.Message, logger);
+            } finally {
+                connection.Dispose();
+            }
+
+            return latestTerminalInputOrderId;
         }
 
         private static void DeleteOldLogFiles(ILogger logger) {
@@ -144,7 +369,6 @@ namespace zapsi_service_optimont_importer {
                     }
                     reader.Close();
                     reader.Dispose();
-                    
                 } catch (Exception error) {
                     LogError("[ MAIN ] --ERR-- Problem reading product for order: " + error.Message + selectQuery, logger);
                 } finally {
@@ -160,7 +384,7 @@ namespace zapsi_service_optimont_importer {
             return productId;
         }
 
-       
+
         private static int GetProductIdFromFisTableFor(Order order, ILogger logger) {
             var productId = 0;
             var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
@@ -175,7 +399,6 @@ namespace zapsi_service_optimont_importer {
                     }
                     reader.Close();
                     reader.Dispose();
-                    
                 } catch (Exception error) {
                     LogError("[ MAIN ] --ERR-- Problem reading product for order: " + error.Message + selectQuery, logger);
                 } finally {
@@ -196,7 +419,7 @@ namespace zapsi_service_optimont_importer {
             var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
             try {
                 connection.Open();
-                const string selectQuery = "select * from zapsi2.order";
+                var selectQuery = $"select * from zapsi2.order";
                 var command = new MySqlCommand(selectQuery, connection);
                 try {
                     var reader = command.ExecuteReader();
@@ -226,7 +449,7 @@ namespace zapsi_service_optimont_importer {
             var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
             try {
                 connection.Open();
-                const string selectQuery = "select * from zapsi2.fis_order";
+                var selectQuery = $"select * from zapsi2.fis_order";
                 var command = new MySqlCommand(selectQuery, connection);
                 try {
                     var reader = command.ExecuteReader();

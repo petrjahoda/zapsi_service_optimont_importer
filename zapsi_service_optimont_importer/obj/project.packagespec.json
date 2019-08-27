@@ -1,13 +1,13 @@
 ﻿{
   "version": "1.0.0",
   "restore": {
-    "projectUniqueName": "C:\\Users\\jahod\\zapsi.eu\\Zapsi - Documents\\Software\\Petr Jahoda\\zapsi_service_optimont_importer\\zapsi_service_optimont_importer\\zapsi_service_optimont_importer.csproj",
+    "projectUniqueName": "/home/petrjahoda/RiderProjects/zapsi_service_optimont_importer/zapsi_service_optimont_importer/zapsi_service_optimont_importer.csproj",
     "projectName": "zapsi_service_optimont_importer",
-    "projectPath": "C:\\Users\\jahod\\zapsi.eu\\Zapsi - Documents\\Software\\Petr Jahoda\\zapsi_service_optimont_importer\\zapsi_service_optimont_importer\\zapsi_service_optimont_importer.csproj",
-    "outputPath": "C:\\Users\\jahod\\zapsi.eu\\Zapsi - Documents\\Software\\Petr Jahoda\\zapsi_service_optimont_importer\\zapsi_service_optimont_importer\\obj\\",
+    "projectPath": "/home/petrjahoda/RiderProjects/zapsi_service_optimont_importer/zapsi_service_optimont_importer/zapsi_service_optimont_importer.csproj",
+    "outputPath": "/home/petrjahoda/RiderProjects/zapsi_service_optimont_importer/zapsi_service_optimont_importer/obj/",
     "projectStyle": "PackageReference",
     "fallbackFolders": [
-      "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+      "/usr/share/dotnet/sdk/NuGetFallbackFolder"
     ],
     "originalTargetFrameworks": [
       "netcoreapp2.2"

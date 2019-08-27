@@ -1,11 +1,22 @@
-C:\Users\jahod\zapsi.eu\Zapsi - Documents\Software\Petr Jahoda\zapsi_service_optimont_importer\zapsi_service_optimont_importer\bin\Debug\netcoreapp2.2\zapsi_service_optimont_importer.deps.json
-C:\Users\jahod\zapsi.eu\Zapsi - Documents\Software\Petr Jahoda\zapsi_service_optimont_importer\zapsi_service_optimont_importer\bin\Debug\netcoreapp2.2\zapsi_service_optimont_importer.runtimeconfig.json
-C:\Users\jahod\zapsi.eu\Zapsi - Documents\Software\Petr Jahoda\zapsi_service_optimont_importer\zapsi_service_optimont_importer\bin\Debug\netcoreapp2.2\zapsi_service_optimont_importer.runtimeconfig.dev.json
-C:\Users\jahod\zapsi.eu\Zapsi - Documents\Software\Petr Jahoda\zapsi_service_optimont_importer\zapsi_service_optimont_importer\bin\Debug\netcoreapp2.2\zapsi_service_optimont_importer.dll
-C:\Users\jahod\zapsi.eu\Zapsi - Documents\Software\Petr Jahoda\zapsi_service_optimont_importer\zapsi_service_optimont_importer\bin\Debug\netcoreapp2.2\zapsi_service_optimont_importer.pdb
-C:\Users\jahod\zapsi.eu\Zapsi - Documents\Software\Petr Jahoda\zapsi_service_optimont_importer\zapsi_service_optimont_importer\obj\Debug\netcoreapp2.2\zapsi_service_optimont_importer.csprojAssemblyReference.cache
-C:\Users\jahod\zapsi.eu\Zapsi - Documents\Software\Petr Jahoda\zapsi_service_optimont_importer\zapsi_service_optimont_importer\obj\Debug\netcoreapp2.2\zapsi_service_optimont_importer.csproj.CoreCompileInputs.cache
-C:\Users\jahod\zapsi.eu\Zapsi - Documents\Software\Petr Jahoda\zapsi_service_optimont_importer\zapsi_service_optimont_importer\obj\Debug\netcoreapp2.2\zapsi_service_optimont_importer.AssemblyInfoInputs.cache
-C:\Users\jahod\zapsi.eu\Zapsi - Documents\Software\Petr Jahoda\zapsi_service_optimont_importer\zapsi_service_optimont_importer\obj\Debug\netcoreapp2.2\zapsi_service_optimont_importer.AssemblyInfo.cs
-C:\Users\jahod\zapsi.eu\Zapsi - Documents\Software\Petr Jahoda\zapsi_service_optimont_importer\zapsi_service_optimont_importer\obj\Debug\netcoreapp2.2\zapsi_service_optimont_importer.dll
-C:\Users\jahod\zapsi.eu\Zapsi - Documents\Software\Petr Jahoda\zapsi_service_optimont_importer\zapsi_service_optimont_importer\obj\Debug\netcoreapp2.2\zapsi_service_optimont_importer.pdb
+C:/Users/jahod/zapsi.eu/Zapsi - Documents/Software/Petr Jahoda/zapsi_service_optimont_importer/zapsi_service_optimont_importer/bin/Debug/netcoreapp2.2/zapsi_service_optimont_importer.deps.json
+C:/Users/jahod/zapsi.eu/Zapsi - Documents/Software/Petr Jahoda/zapsi_service_optimont_importer/zapsi_service_optimont_importer/bin/Debug/netcoreapp2.2/zapsi_service_optimont_importer.runtimeconfig.json
+C:/Users/jahod/zapsi.eu/Zapsi - Documents/Software/Petr Jahoda/zapsi_service_optimont_importer/zapsi_service_optimont_importer/bin/Debug/netcoreapp2.2/zapsi_service_optimont_importer.runtimeconfig.dev.json
+C:/Users/jahod/zapsi.eu/Zapsi - Documents/Software/Petr Jahoda/zapsi_service_optimont_importer/zapsi_service_optimont_importer/bin/Debug/netcoreapp2.2/zapsi_service_optimont_importer.dll
+C:/Users/jahod/zapsi.eu/Zapsi - Documents/Software/Petr Jahoda/zapsi_service_optimont_importer/zapsi_service_optimont_importer/bin/Debug/netcoreapp2.2/zapsi_service_optimont_importer.pdb
+C:/Users/jahod/zapsi.eu/Zapsi - Documents/Software/Petr Jahoda/zapsi_service_optimont_importer/zapsi_service_optimont_importer/obj/Debug/netcoreapp2.2/zapsi_service_optimont_importer.csprojAssemblyReference.cache
+C:/Users/jahod/zapsi.eu/Zapsi - Documents/Software/Petr Jahoda/zapsi_service_optimont_importer/zapsi_service_optimont_importer/obj/Debug/netcoreapp2.2/zapsi_service_optimont_importer.csproj.CoreCompileInputs.cache
+C:/Users/jahod/zapsi.eu/Zapsi - Documents/Software/Petr Jahoda/zapsi_service_optimont_importer/zapsi_service_optimont_importer/obj/Debug/netcoreapp2.2/zapsi_service_optimont_importer.AssemblyInfoInputs.cache
+C:/Users/jahod/zapsi.eu/Zapsi - Documents/Software/Petr Jahoda/zapsi_service_optimont_importer/zapsi_service_optimont_importer/obj/Debug/netcoreapp2.2/zapsi_service_optimont_importer.AssemblyInfo.cs
+C:/Users/jahod/zapsi.eu/Zapsi - Documents/Software/Petr Jahoda/zapsi_service_optimont_importer/zapsi_service_optimont_importer/obj/Debug/netcoreapp2.2/zapsi_service_optimont_importer.dll
+C:/Users/jahod/zapsi.eu/Zapsi - Documents/Software/Petr Jahoda/zapsi_service_optimont_importer/zapsi_service_optimont_importer/obj/Debug/netcoreapp2.2/zapsi_service_optimont_importer.pdb
+/home/petrjahoda/RiderProjects/zapsi_service_optimont_importer/zapsi_service_optimont_importer/bin/Debug/netcoreapp2.2/zapsi_service_optimont_importer.deps.json
+/home/petrjahoda/RiderProjects/zapsi_service_optimont_importer/zapsi_service_optimont_importer/bin/Debug/netcoreapp2.2/zapsi_service_optimont_importer.runtimeconfig.json
+/home/petrjahoda/RiderProjects/zapsi_service_optimont_importer/zapsi_service_optimont_importer/bin/Debug/netcoreapp2.2/zapsi_service_optimont_importer.runtimeconfig.dev.json
+/home/petrjahoda/RiderProjects/zapsi_service_optimont_importer/zapsi_service_optimont_importer/bin/Debug/netcoreapp2.2/zapsi_service_optimont_importer.dll
+/home/petrjahoda/RiderProjects/zapsi_service_optimont_importer/zapsi_service_optimont_importer/bin/Debug/netcoreapp2.2/zapsi_service_optimont_importer.pdb
+/home/petrjahoda/RiderProjects/zapsi_service_optimont_importer/zapsi_service_optimont_importer/obj/Debug/netcoreapp2.2/zapsi_service_optimont_importer.csprojAssemblyReference.cache
+/home/petrjahoda/RiderProjects/zapsi_service_optimont_importer/zapsi_service_optimont_importer/obj/Debug/netcoreapp2.2/zapsi_service_optimont_importer.csproj.CoreCompileInputs.cache
+/home/petrjahoda/RiderProjects/zapsi_service_optimont_importer/zapsi_service_optimont_importer/obj/Debug/netcoreapp2.2/zapsi_service_optimont_importer.AssemblyInfoInputs.cache
+/home/petrjahoda/RiderProjects/zapsi_service_optimont_importer/zapsi_service_optimont_importer/obj/Debug/netcoreapp2.2/zapsi_service_optimont_importer.AssemblyInfo.cs
+/home/petrjahoda/RiderProjects/zapsi_service_optimont_importer/zapsi_service_optimont_importer/obj/Debug/netcoreapp2.2/zapsi_service_optimont_importer.dll
+/home/petrjahoda/RiderProjects/zapsi_service_optimont_importer/zapsi_service_optimont_importer/obj/Debug/netcoreapp2.2/zapsi_service_optimont_importer.pdb
