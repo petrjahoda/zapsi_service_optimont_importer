@@ -3937,23 +3937,23 @@
     ]
   },
   "packageFolders": {
-    "/home/petrjahoda/.nuget/packages/": {},
-    "/usr/share/dotnet/sdk/NuGetFallbackFolder": {}
+    "C:\\Users\\Petr\\.nuget\\packages\\": {},
+    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/petrjahoda/RiderProjects/zapsi_service_optimont_importer/zapsi_service_optimont_importer/zapsi_service_optimont_importer.csproj",
+      "projectUniqueName": "C:\\Users\\Petr\\RiderProjects\\zapsi_service_optimont_importer\\zapsi_service_optimont_importer\\zapsi_service_optimont_importer.csproj",
       "projectName": "zapsi_service_optimont_importer",
-      "projectPath": "/home/petrjahoda/RiderProjects/zapsi_service_optimont_importer/zapsi_service_optimont_importer/zapsi_service_optimont_importer.csproj",
-      "packagesPath": "/home/petrjahoda/.nuget/packages/",
-      "outputPath": "/home/petrjahoda/RiderProjects/zapsi_service_optimont_importer/zapsi_service_optimont_importer/obj/",
+      "projectPath": "C:\\Users\\Petr\\RiderProjects\\zapsi_service_optimont_importer\\zapsi_service_optimont_importer\\zapsi_service_optimont_importer.csproj",
+      "packagesPath": "C:\\Users\\Petr\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Petr\\RiderProjects\\zapsi_service_optimont_importer\\zapsi_service_optimont_importer\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "/usr/share/dotnet/sdk/NuGetFallbackFolder"
+        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
       ],
       "configFilePaths": [
-        "/home/petrjahoda/.config/NuGet/NuGet.Config"
+        "C:\\Users\\Petr\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "netcoreapp2.2"

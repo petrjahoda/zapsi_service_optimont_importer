@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -87,7 +88,7 @@ namespace zapsi_service_optimont_importer {
                 UpdateOrdersData(newOrders, logger);
             }
             foreach (var order in newOrders) {
-                LogInfo($"[ MAIN ] --INF-- Adding order: {order.Id}", logger);
+                LogInfo($"[ MAIN ] --INF-- Adding order: {order.Name}", logger);
                 CreateNewOrderInFisTable(order, logger);
             }
         }
@@ -101,7 +102,7 @@ namespace zapsi_service_optimont_importer {
                 try {
                     okInKg = order.KgOK.Substring(6);
                 } catch (Exception e) {
-                    LogError($"[ --ERR-- Problem parsing kg: {e.Message}, {order.KgOK}", logger);
+                    LogInfo($"[ --INF-- Record {order.Name} do not have kg", logger);
                 }
             }
 
@@ -110,8 +111,8 @@ namespace zapsi_service_optimont_importer {
                 connection.Open();
                 var command = connection.CreateCommand();
                 command.CommandText =
-                    $"INSERT INTO `zapsi2`.`fis_production` (`TerminalInputOrderId`, `DatumCasOd`, `DatumCasDo`, `IDZ`, `IDVC`, `IDS`, `IDOper`, `MnozstviOK`, `MnozstviNOK`, `KgOK`, `KgNOK`) " +
-                    $"VALUES ('{order.TerminalInputOrderId}', '{startDate}', '{endDate}', '{order.IDZ}', {order.IDVC}, {order.IDS}, NULL, {okCount}, {order.NOK}, {okInKg}, NULL);";
+                    $"INSERT INTO `zapsi2`.`fis_production` (`IDFis`,`TerminalInputOrderId`, `DatumCasOd`, `DatumCasDo`, `IDZ`, `IDVC`, `IDS`, `IDOper`, `MnozstviOK`, `MnozstviNOK`, `KgOK`, `KgNOK`,`Prenos`) " +
+                    $"VALUES ({order.Name},'{order.TerminalInputOrderId}', '{startDate}', '{endDate}', '{order.IDZ}', {order.ZapsiOrderId}, {order.IDS}, NULL, {okCount}, {order.NOK}, {okInKg}, NULL, b'0');";
                 try {
                     command.ExecuteNonQuery();
                 } catch (Exception error) {
@@ -131,12 +132,44 @@ namespace zapsi_service_optimont_importer {
         private static void UpdateOrdersData(IEnumerable<FisImportOrder> newOrders, ILogger logger) {
             foreach (var order in newOrders) {
                 string userUpdate = GetUserFromZapsiData(order.IDZ, logger);
-                string orderUpdate = GetOrderFromZapsiData(order.IDVC, logger);
+                string orderUpdate = GetOrderFromZapsiData(order.ZapsiOrderId, logger);
                 string workplaceUpdate = GetWorkplaceFromZapsiData(order.IDS, logger);
+                string orderName = GetOrderNameFromZapsiData(order.ZapsiOrderId, logger);
                 order.IDZ = userUpdate;
                 order.IDVC = orderUpdate;
                 order.IDS = workplaceUpdate;
+                order.Name = orderName;
             }
+        }
+
+        private static string GetOrderNameFromZapsiData(string zapsiorderId, ILogger logger) {
+            var orderId = "0";
+            var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
+            try {
+                connection.Open();
+                var selectQuery = $"select * from zapsi2.order where OID={zapsiorderId}";
+                var command = new MySqlCommand(selectQuery, connection);
+                try {
+                    var reader = command.ExecuteReader();
+                    if (reader.Read()) {
+                        orderId = Convert.ToString(reader["Name"]);
+                    }
+                    reader.Close();
+                    reader.Dispose();
+                } catch (Exception error) {
+                    LogError("[ MAIN ] --ERR-- Problem reading from user table: " + error.Message + selectQuery, logger);
+                } finally {
+                    command.Dispose();
+                }
+
+                connection.Close();
+            } catch (Exception error) {
+                LogError("[ MAIN ] --ERR-- Problem with database: " + error.Message, logger);
+            } finally {
+                connection.Dispose();
+            }
+
+            return orderId;
         }
 
         private static string GetWorkplaceFromZapsiData(string terminalId, ILogger logger) {
@@ -170,7 +203,7 @@ namespace zapsi_service_optimont_importer {
         }
 
         private static string GetOrderFromZapsiData(string barcode, ILogger logger) {
-            var orderId = "0";
+            var orderIDVC = "0";
             var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
             try {
                 connection.Open();
@@ -179,7 +212,7 @@ namespace zapsi_service_optimont_importer {
                 try {
                     var reader = command.ExecuteReader();
                     if (reader.Read()) {
-                        orderId = Convert.ToString(reader["Barcode"]);
+                        orderIDVC = Convert.ToString(reader["Barcode"]);
                     }
                     reader.Close();
                     reader.Dispose();
@@ -196,7 +229,7 @@ namespace zapsi_service_optimont_importer {
                 connection.Dispose();
             }
 
-            return orderId;
+            return orderIDVC;
         }
 
         private static string GetUserFromZapsiData(string userId, ILogger logger) {
@@ -243,7 +276,7 @@ namespace zapsi_service_optimont_importer {
                         orderToImport.TerminalInputOrderId = Convert.ToString(reader["OID"]);
                         orderToImport.DTS = Convert.ToDateTime(reader["DTS"]);
                         orderToImport.DTE = Convert.ToDateTime(reader["DTE"]);
-                        orderToImport.IDVC = Convert.ToString(reader["OrderID"]);
+                        orderToImport.ZapsiOrderId = Convert.ToString(reader["OrderID"]);
                         orderToImport.IDZ = Convert.ToString(reader["UserID"]);
                         orderToImport.IDS = Convert.ToString(reader["DeviceID"]);
                         orderToImport.TotalCount = Convert.ToString(reader["Count"]);
@@ -337,7 +370,7 @@ namespace zapsi_service_optimont_importer {
                 connection.Open();
                 var command = connection.CreateCommand();
                 command.CommandText = $"INSERT INTO `zapsi2`.`order` (`Name`, `Barcode`, `ProductID`, `OrderStatusID`, `CountRequested`, `WorkplaceID`) " +
-                                      $"VALUES ('{order.Barcode}', '{order.Barcode}', {productId}, DEFAULT, {order.RequestedAmount}, NULL);";
+                                      $"VALUES ('{order.Oid}', '{order.Barcode}', {productId}, DEFAULT, {order.RequestedAmount}, NULL);";
                 try {
                     command.ExecuteNonQuery();
                     LogInfo($"[  {order.Oid} ] --INF-- Added from FIS to Zapsi", logger);
@@ -455,7 +488,7 @@ namespace zapsi_service_optimont_importer {
                     var reader = command.ExecuteReader();
                     while (reader.Read()) {
                         var order = new Order();
-                        order.Oid = Convert.ToInt32(reader["IDVC"]);
+                        order.Oid = Convert.ToInt32(reader["ID"]);
                         order.ProductId = Convert.ToString(reader["IDVM"]);
                         order.WorkplaceId = Convert.ToString(reader["IDVC"]);
                         order.Barcode = Convert.ToString(reader["IDVC"]);
