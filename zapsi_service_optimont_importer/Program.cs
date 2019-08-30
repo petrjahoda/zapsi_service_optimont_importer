@@ -68,6 +68,8 @@ namespace zapsi_service_optimont_importer {
                         TransferOrders(logger);
                         LogInfo($"[ MAIN ] --INF-- Updating fis_production table", logger);
                         UpdateFisProductionTable(logger);
+                        LogInfo($"[ MAIN ] --INF-- Deleting fis_production records with Prenos=1", logger);
+                        DeletePrenosRecords(logger);
                         LogInfo($"[ MAIN ] --INF-- Deleting old log data", logger);
                         DeleteOldLogFiles(logger);
                         _loopIsRunning = false;
@@ -75,6 +77,28 @@ namespace zapsi_service_optimont_importer {
                     }
                 };
                 RunTimer(timer);
+            }
+        }
+
+        private static void DeletePrenosRecords(ILogger logger) {
+            var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
+            try {
+                connection.Open();
+                var command = connection.CreateCommand();
+                command.CommandText =$"delete from zapsi2.fis_production where Prenos=1";
+                try {
+                    command.ExecuteNonQuery();
+                } catch (Exception error) {
+                    LogError($"[ --ERR-- Problem deleting data from fis_production into database: {error.Message}{command.CommandText}", logger);
+                } finally {
+                    command.Dispose();
+                }
+
+                connection.Close();
+            } catch (Exception error) {
+                LogError("[ MAIN ] --ERR-- Problem with database: " + error.Message, logger);
+            } finally {
+                connection.Dispose();
             }
         }
 
