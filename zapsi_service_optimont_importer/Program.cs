@@ -68,8 +68,8 @@ namespace zapsi_service_optimont_importer {
                         TransferOrders(logger);
                         LogInfo($"[ MAIN ] --INF-- Updating fis_production table", logger);
                         UpdateFisProductionTable(logger);
-                        LogInfo($"[ MAIN ] --INF-- Deleting fis_production records with Prenos=1", logger);
-                        DeletePrenosRecords(logger);
+//                        LogInfo($"[ MAIN ] --INF-- Deleting fis_production records with Prenos=1", logger);
+//                        DeletePrenosRecords(logger);
                         LogInfo($"[ MAIN ] --INF-- Deleting old log data", logger);
                         DeleteOldLogFiles(logger);
                         _loopIsRunning = false;
@@ -136,7 +136,7 @@ namespace zapsi_service_optimont_importer {
                 var command = connection.CreateCommand();
                 command.CommandText =
                     $"INSERT INTO `zapsi2`.`fis_production` (`IDFis`,`TerminalInputOrderId`, `DatumCasOd`, `DatumCasDo`, `IDZ`, `IDVC`, `IDS`, `IDOper`, `MnozstviOK`, `MnozstviNOK`, `KgOK`, `KgNOK`,`Prenos`) " +
-                    $"VALUES ({order.Name},'{order.TerminalInputOrderId}', '{startDate}', '{endDate}', '{order.IDZ}', {order.ZapsiOrderId}, {order.IDS}, NULL, {okCount}, {order.NOK}, {okInKg}, NULL, b'0');";
+                    $"VALUES ({order.Name},'{order.TerminalInputOrderId}', '{startDate}', '{endDate}', '{order.IDZ}', {order.IDVC}, {order.IDS}, NULL, {okCount}, {order.NOK}, {okInKg}, NULL, b'0');";
                 try {
                     command.ExecuteNonQuery();
                 } catch (Exception error) {
@@ -176,7 +176,7 @@ namespace zapsi_service_optimont_importer {
                 try {
                     var reader = command.ExecuteReader();
                     if (reader.Read()) {
-                        orderId = Convert.ToString(reader["Name"]);
+                        orderId = Convert.ToString(reader["Barcode"]);
                     }
                     reader.Close();
                     reader.Dispose();
