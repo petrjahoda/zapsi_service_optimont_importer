@@ -106,7 +106,7 @@ namespace zapsi_service_optimont_importer {
 //            LogInfo($"[ MAIN ] --INF-- Downloading latest imported order from fis_production", logger);
 //            var latestImportedterminalInputOrderId = DownloadLatestImportedOrderFromFisTable(logger);
             LogInfo($"[ MAIN ] --INF-- Downloading orders from Zapsi", logger);
-            var newOrders = DownloadNewOrdersFromZapsi(logger);
+            var newOrders = DownloadOrdersFromZapsi(logger);
             LogInfo($"[ MAIN ] --INF-- Updating orders", logger);
             if (newOrders.Any()) {
                 UpdateOrdersData(newOrders, logger);
@@ -155,13 +155,13 @@ namespace zapsi_service_optimont_importer {
 
         private static void UpdateOrdersData(IEnumerable<FisImportOrder> newOrders, ILogger logger) {
             foreach (var order in newOrders) {
-                string userUpdate = GetUserFromZapsiData(order.IDZ, logger);
-                string orderUpdate = GetOrderFromZapsiData(order.ZapsiOrderId, logger);
-                string workplaceUpdate = GetWorkplaceFromZapsiData(order.IDS, logger);
+                string orderUser = GetUserFromZapsiData(order.IDZ, logger);
+                string orderBarcode = GetOrderBarcodeFromZapsiData(order.ZapsiOrderId, logger);
+                string orderWorkplace = GetWorkplaceFromZapsiData(order.IDS, logger);
                 string orderName = GetOrderNameFromZapsiData(order.ZapsiOrderId, logger);
-                order.IDZ = userUpdate;
-                order.IDVC = orderUpdate;
-                order.IDS = workplaceUpdate;
+                order.IDZ = orderUser;
+                order.IDVC = orderBarcode;
+                order.IDS = orderWorkplace;
                 order.Name = orderName;
             }
         }
@@ -176,7 +176,7 @@ namespace zapsi_service_optimont_importer {
                 try {
                     var reader = command.ExecuteReader();
                     if (reader.Read()) {
-                        orderId = Convert.ToString(reader["Barcode"]);
+                        orderId = Convert.ToString(reader["Name"]);
                     }
                     reader.Close();
                     reader.Dispose();
@@ -226,7 +226,7 @@ namespace zapsi_service_optimont_importer {
             return code;
         }
 
-        private static string GetOrderFromZapsiData(string barcode, ILogger logger) {
+        private static string GetOrderBarcodeFromZapsiData(string barcode, ILogger logger) {
             var orderIDVC = "0";
             var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
             try {
@@ -286,7 +286,7 @@ namespace zapsi_service_optimont_importer {
             return userLogin;
         }
 
-        private static IEnumerable<FisImportOrder> DownloadNewOrdersFromZapsi(ILogger logger) {
+        private static IEnumerable<FisImportOrder> DownloadOrdersFromZapsi(ILogger logger) {
             var orders = new List<FisImportOrder>();
             var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
             try {
@@ -481,7 +481,7 @@ namespace zapsi_service_optimont_importer {
                 try {
                     var reader = command.ExecuteReader();
                     while (reader.Read()) {
-                        var actualOid = Convert.ToString(reader["Name"]);
+                        var actualOid = Convert.ToString(reader["Barcode"]);
                         orderOiDs.Add(actualOid);
                     }
                     reader.Close();
