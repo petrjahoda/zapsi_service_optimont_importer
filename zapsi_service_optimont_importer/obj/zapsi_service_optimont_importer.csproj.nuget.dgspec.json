@@ -1,23 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Petr\\RiderProjects\\zapsi_service_optimont_importer\\zapsi_service_optimont_importer\\zapsi_service_optimont_importer.csproj": {}
+    "/Users/petrjahoda/RiderProjects/zapsi_service_optimont_importer/zapsi_service_optimont_importer/zapsi_service_optimont_importer.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Petr\\RiderProjects\\zapsi_service_optimont_importer\\zapsi_service_optimont_importer\\zapsi_service_optimont_importer.csproj": {
+    "/Users/petrjahoda/RiderProjects/zapsi_service_optimont_importer/zapsi_service_optimont_importer/zapsi_service_optimont_importer.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Petr\\RiderProjects\\zapsi_service_optimont_importer\\zapsi_service_optimont_importer\\zapsi_service_optimont_importer.csproj",
+        "projectUniqueName": "/Users/petrjahoda/RiderProjects/zapsi_service_optimont_importer/zapsi_service_optimont_importer/zapsi_service_optimont_importer.csproj",
         "projectName": "zapsi_service_optimont_importer",
-        "projectPath": "C:\\Users\\Petr\\RiderProjects\\zapsi_service_optimont_importer\\zapsi_service_optimont_importer\\zapsi_service_optimont_importer.csproj",
-        "packagesPath": "C:\\Users\\Petr\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Petr\\RiderProjects\\zapsi_service_optimont_importer\\zapsi_service_optimont_importer\\obj\\",
+        "projectPath": "/Users/petrjahoda/RiderProjects/zapsi_service_optimont_importer/zapsi_service_optimont_importer/zapsi_service_optimont_importer.csproj",
+        "packagesPath": "/Users/petrjahoda/.nuget/packages/",
+        "outputPath": "/Users/petrjahoda/RiderProjects/zapsi_service_optimont_importer/zapsi_service_optimont_importer/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\Petr\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "/Users/petrjahoda/.config/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "netcoreapp2.2"

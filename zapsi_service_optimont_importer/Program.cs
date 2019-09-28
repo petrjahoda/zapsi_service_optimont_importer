@@ -14,7 +14,7 @@ using Newtonsoft.Json;
 
 namespace zapsi_service_optimont_importer {
     class Program {
-        private const string BuildDate = "2019.3.2.27";
+        private const string BuildDate = "2019.3.3.28";
         private const string DataFolder = "Logs";
         private const string RedColor = "\u001b[31;1m";
         private const string YellowColor = "\u001b[33;1m";
@@ -48,6 +48,7 @@ namespace zapsi_service_optimont_importer {
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("  >> OPTIMONT FIS IMPORTER ");
             }
+
             var outputPath = CreateLogFileIfNotExists("0-main.txt");
             using (CreateLogger(outputPath, out var logger)) {
                 CheckOsPlatform(logger);
@@ -85,7 +86,7 @@ namespace zapsi_service_optimont_importer {
             try {
                 connection.Open();
                 var command = connection.CreateCommand();
-                command.CommandText =$"delete from zapsi2.fis_production where Prenos=1";
+                command.CommandText = $"delete from zapsi2.fis_production where Prenos=1";
                 try {
                     command.ExecuteNonQuery();
                 } catch (Exception error) {
@@ -111,6 +112,7 @@ namespace zapsi_service_optimont_importer {
             if (newOrders.Any()) {
                 UpdateOrdersData(newOrders, logger);
             }
+
             foreach (var order in newOrders) {
                 LogInfo($"[ MAIN ] --INF-- Adding order: {order.Name}", logger);
                 CreateNewOrderInFisTable(order, logger);
@@ -167,7 +169,7 @@ namespace zapsi_service_optimont_importer {
         }
 
         private static string GetOrderNameFromZapsiData(string zapsiorderId, ILogger logger) {
-            var orderId = "0";
+            var orderName = "0";
             var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
             try {
                 connection.Open();
@@ -176,8 +178,9 @@ namespace zapsi_service_optimont_importer {
                 try {
                     var reader = command.ExecuteReader();
                     if (reader.Read()) {
-                        orderId = Convert.ToString(reader["Name"]);
+                        orderName = Convert.ToString(reader["Name"]);
                     }
+
                     reader.Close();
                     reader.Dispose();
                 } catch (Exception error) {
@@ -193,7 +196,14 @@ namespace zapsi_service_optimont_importer {
                 connection.Dispose();
             }
 
-            return orderId;
+            try {
+                var splittedOrder = orderName.Split("-");
+                return splittedOrder[0];
+            } catch (Exception e) {
+                LogError("[ MAIN ] --ERR-- Problem parsing order name: " + e.Message, logger);
+            }
+
+            return orderName;
         }
 
         private static string GetWorkplaceFromZapsiData(string terminalId, ILogger logger) {
@@ -208,6 +218,7 @@ namespace zapsi_service_optimont_importer {
                     if (reader.Read()) {
                         code = Convert.ToString(reader["Code"]);
                     }
+
                     reader.Close();
                     reader.Dispose();
                 } catch (Exception error) {
@@ -238,6 +249,7 @@ namespace zapsi_service_optimont_importer {
                     if (reader.Read()) {
                         orderIDVC = Convert.ToString(reader["Barcode"]);
                     }
+
                     reader.Close();
                     reader.Dispose();
                 } catch (Exception error) {
@@ -268,6 +280,7 @@ namespace zapsi_service_optimont_importer {
                     if (reader.Read()) {
                         userLogin = Convert.ToString(reader["Login"]);
                     }
+
                     reader.Close();
                     reader.Dispose();
                 } catch (Exception error) {
@@ -308,6 +321,7 @@ namespace zapsi_service_optimont_importer {
                         orderToImport.KgOK = Convert.ToString(reader["Note"]);
                         orders.Add(orderToImport);
                     }
+
                     reader.Close();
                     reader.Dispose();
                 } catch (Exception error) {
@@ -339,6 +353,7 @@ namespace zapsi_service_optimont_importer {
                         latestTerminalInputOrderId = Convert.ToString(reader["TerminalInputOrderId"]);
                         LogInfo($"[ MAIN ] --INF-- Downloaded latest record from fis_table is {latestTerminalInputOrderId}", logger);
                     }
+
                     reader.Close();
                     reader.Dispose();
                 } catch (Exception error) {
@@ -379,7 +394,7 @@ namespace zapsi_service_optimont_importer {
             var zapsiOrders = DownloadActualOrdersFromZapsi(logger);
             LogInfo($"[ MAIN ] --INF-- Comparing orders: " + fisOrders.Count + "-" + zapsiOrders.Count, logger);
             foreach (var order in fisOrders) {
-                if (!zapsiOrders.Contains(order.Barcode.ToString())) {
+                if (!zapsiOrders.Contains(order.Barcode)) {
                     LogInfo($"[ MAIN ] --INF-- Adding order: {order.Oid} with barcode{order.Barcode}", logger);
                     CreateNewOrderInZapsi(order, logger);
                 }
@@ -424,6 +439,7 @@ namespace zapsi_service_optimont_importer {
                     while (reader.Read()) {
                         returnedProductId = Convert.ToInt32(reader["Oid"]);
                     }
+
                     reader.Close();
                     reader.Dispose();
                 } catch (Exception error) {
@@ -438,6 +454,7 @@ namespace zapsi_service_optimont_importer {
             } finally {
                 connection.Dispose();
             }
+
             return returnedProductId;
         }
 
@@ -454,6 +471,7 @@ namespace zapsi_service_optimont_importer {
                     while (reader.Read()) {
                         productId = Convert.ToString(reader["ArtNr"]);
                     }
+
                     reader.Close();
                     reader.Dispose();
                 } catch (Exception error) {
@@ -468,6 +486,7 @@ namespace zapsi_service_optimont_importer {
             } finally {
                 connection.Dispose();
             }
+
             return productId;
         }
 
@@ -484,6 +503,7 @@ namespace zapsi_service_optimont_importer {
                         var actualOid = Convert.ToString(reader["Barcode"]);
                         orderOiDs.Add(actualOid);
                     }
+
                     reader.Close();
                     reader.Dispose();
                 } catch (Exception error) {
@@ -498,6 +518,7 @@ namespace zapsi_service_optimont_importer {
             } finally {
                 connection.Dispose();
             }
+
             return orderOiDs;
         }
 
@@ -517,10 +538,12 @@ namespace zapsi_service_optimont_importer {
                         order.WorkplaceId = Convert.ToString(reader["IDVC"]);
                         order.Barcode = Convert.ToString(reader["IDVC"]);
                         order.RequestedAmount = Convert.ToString(reader["Mnozstvi"]);
+                        order.Oid = Convert.ToInt32(order.Oid + "-" + order.Barcode);
                         LogInfo($"[ MAIN ] --INF-- From FIS downloaded order: {order.Oid} with barcode{order.Barcode}", logger);
 
                         orders.Add(order);
                     }
+
                     reader.Close();
                     reader.Dispose();
                 } catch (Exception error) {
@@ -535,6 +558,7 @@ namespace zapsi_service_optimont_importer {
             } finally {
                 connection.Dispose();
             }
+
             return orders;
         }
 
@@ -589,6 +613,7 @@ namespace zapsi_service_optimont_importer {
                         var barcode = Convert.ToString(reader["Barcode"]);
                         productBarcodeList.Add(barcode);
                     }
+
                     reader.Close();
                     reader.Dispose();
                 } catch (Exception error) {
@@ -603,6 +628,7 @@ namespace zapsi_service_optimont_importer {
             } finally {
                 connection.Dispose();
             }
+
             return productBarcodeList;
         }
 
@@ -623,6 +649,7 @@ namespace zapsi_service_optimont_importer {
                         product.Dimensions = Convert.ToString(reader["Velikost"]);
                         products.Add(product);
                     }
+
                     reader.Close();
                     reader.Dispose();
                 } catch (Exception error) {
@@ -637,6 +664,7 @@ namespace zapsi_service_optimont_importer {
             } finally {
                 connection.Dispose();
             }
+
             return products;
         }
 
@@ -685,6 +713,7 @@ namespace zapsi_service_optimont_importer {
             if (user.RFID.Length == 0) {
                 user.RFID = "null";
             }
+
             var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
             try {
                 connection.Open();
@@ -721,6 +750,7 @@ namespace zapsi_service_optimont_importer {
                         var actualOid = Convert.ToString(reader["Login"]);
                         userOidList.Add(actualOid);
                     }
+
                     reader.Close();
                     reader.Dispose();
                 } catch (Exception error) {
@@ -735,6 +765,7 @@ namespace zapsi_service_optimont_importer {
             } finally {
                 connection.Dispose();
             }
+
             return userOidList;
         }
 
@@ -755,6 +786,7 @@ namespace zapsi_service_optimont_importer {
                         user.RFID = Convert.ToString(reader["Rfid"]);
                         users.Add(user);
                     }
+
                     reader.Close();
                     reader.Dispose();
                 } catch (Exception error) {
@@ -769,6 +801,7 @@ namespace zapsi_service_optimont_importer {
             } finally {
                 connection.Dispose();
             }
+
             return users;
         }
 
