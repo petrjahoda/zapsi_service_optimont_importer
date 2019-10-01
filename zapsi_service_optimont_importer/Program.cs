@@ -533,12 +533,12 @@ namespace zapsi_service_optimont_importer {
                     var reader = command.ExecuteReader();
                     while (reader.Read()) {
                         var order = new Order();
-                        order.Oid = Convert.ToInt32(reader["ID"]);
+                        var temporary = Convert.ToString(reader["ID"]);
                         order.ProductId = Convert.ToString(reader["IDVM"]);
                         order.WorkplaceId = Convert.ToString(reader["IDVC"]);
                         order.Barcode = Convert.ToString(reader["IDVC"]);
                         order.RequestedAmount = Convert.ToString(reader["Mnozstvi"]);
-                        order.Oid = Convert.ToInt32(order.Oid + "-" + order.Barcode);
+                        order.Oid = temporary + "-" + order.Barcode;
                         LogInfo($"[ MAIN ] --INF-- From FIS downloaded order: {order.Oid} with barcode{order.Barcode}", logger);
 
                         orders.Add(order);
