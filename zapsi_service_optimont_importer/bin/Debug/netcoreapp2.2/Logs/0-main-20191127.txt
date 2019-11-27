@@ -1,0 +1,4 @@
+2019-11-27T08:43:09.5787100+01:00  [INF] 11/27/2019 08:43:09 [ MAIN ] --INF-- Program built at: 2019.3.3.28 (002f1030)
+2019-11-27T08:43:09.5856680+01:00  [INF] 11/27/2019 08:43:09 [ MAIN ] --INF-- Config file already exists. (e45ccdb1)
+2019-11-27T08:43:09.6494450+01:00  [INF] 11/27/2019 08:43:09 [ MAIN ] --INF-- Config loaded from file for customer: unactivatedsoftware (99ed04c7)
+2019-11-27T08:43:10.8761360+01:00  [INF] 11/27/2019 08:43:10 [ MAIN ] --ERR-- Cannot send email: Computer: petrs-mbp, User: petrjahoda, Program started at 11/27/2019 08:43:09, Version 2019.3.3.28: Mailbox unavailable. The server response was: 5.1.0 Wvj92100T5LHafT01vjAiG authentication failed (e63f22b5)
