@@ -8,13 +8,14 @@ using System.Net.Mail;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
 
 namespace zapsi_service_optimont_importer {
     class Program {
-        private const string BuildDate = "2019.3.3.28";
+        private const string BuildDate = "2019.4.2.27";
         private const string DataFolder = "Logs";
         private const string RedColor = "\u001b[31;1m";
         private const string YellowColor = "\u001b[33;1m";
@@ -398,6 +399,33 @@ namespace zapsi_service_optimont_importer {
                     LogInfo($"[ MAIN ] --INF-- Adding order: {order.Oid} with barcode{order.Barcode}", logger);
                     CreateNewOrderInZapsi(order, logger);
                 }
+
+                if (zapsiOrders.Contains(order.Barcode)) {
+                    UpdateZapsiOrder(order, logger);
+                }
+            }
+        }
+
+        private static void UpdateZapsiOrder(Order order, ILogger logger) {
+            var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
+            try {
+                connection.Open();
+                var command = connection.CreateCommand();
+                command.CommandText = $"UPDATE zapsi2.order set CountRequested = {order.RequestedAmount} where Barcode = {order.Barcode}";
+
+                try {
+                    command.ExecuteNonQuery();
+                } catch (Exception error) {
+                    LogError($"[ MAIN ] --ERR-- Problem updating order Count: {error.Message}, {command.CommandText}", logger);
+                } finally {
+                    command.Dispose();
+                }
+
+                connection.Close();
+            } catch (Exception error) {
+                LogError("[ MAIN ] --ERR-- Problem with database: " + error.Message, logger);
+            } finally {
+                connection.Dispose();
             }
         }
 
@@ -534,11 +562,17 @@ namespace zapsi_service_optimont_importer {
                     while (reader.Read()) {
                         var order = new Order();
                         var temporary = Convert.ToString(reader["ID"]);
+                        Console.WriteLine(temporary);
                         order.ProductId = Convert.ToString(reader["IDVM"]);
+                        Console.WriteLine(order.ProductId);
                         order.WorkplaceId = Convert.ToString(reader["IDVC"]);
+                        Console.WriteLine(order.WorkplaceId);
                         order.Barcode = Convert.ToString(reader["IDVC"]);
+                        Console.WriteLine(order.Barcode);
                         order.RequestedAmount = Convert.ToString(reader["Mnozstvi"]);
+                        Console.WriteLine(order.RequestedAmount);
                         order.Oid = temporary + "-" + order.Barcode;
+                        Console.WriteLine(order.Oid);
                         LogInfo($"[ MAIN ] --INF-- From FIS downloaded order: {order.Oid} with barcode{order.Barcode}", logger);
 
                         orders.Add(order);
