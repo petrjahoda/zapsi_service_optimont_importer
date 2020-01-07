@@ -395,12 +395,11 @@ namespace zapsi_service_optimont_importer {
             var zapsiOrders = DownloadActualOrdersFromZapsi(logger);
             LogInfo($"[ MAIN ] --INF-- Comparing orders: " + fisOrders.Count + "-" + zapsiOrders.Count, logger);
             foreach (var order in fisOrders) {
-                if (!zapsiOrders.Contains(order.Barcode)) {
+                if (!zapsiOrders.Contains(order.Oid)) {
                     LogInfo($"[ MAIN ] --INF-- Adding order: {order.Oid} with barcode{order.Barcode}", logger);
                     CreateNewOrderInZapsi(order, logger);
                 }
-
-                if (zapsiOrders.Contains(order.Barcode)) {
+                if (zapsiOrders.Contains(order.Oid)) {
                     UpdateZapsiOrder(order, logger);
                 }
             }
@@ -562,19 +561,12 @@ namespace zapsi_service_optimont_importer {
                     while (reader.Read()) {
                         var order = new Order();
                         var temporary = Convert.ToString(reader["ID"]);
-                        Console.WriteLine(temporary);
                         order.ProductId = Convert.ToString(reader["IDVM"]);
-                        Console.WriteLine(order.ProductId);
                         order.WorkplaceId = Convert.ToString(reader["IDVC"]);
-                        Console.WriteLine(order.WorkplaceId);
                         order.Barcode = Convert.ToString(reader["IDVC"]);
-                        Console.WriteLine(order.Barcode);
                         order.RequestedAmount = Convert.ToString(reader["Mnozstvi"]);
-                        Console.WriteLine(order.RequestedAmount);
                         order.Oid = temporary + "-" + order.Barcode;
-                        Console.WriteLine(order.Oid);
-                        LogInfo($"[ MAIN ] --INF-- From FIS downloaded order: {order.Oid} with barcode{order.Barcode}", logger);
-
+                        LogInfo($"[ MAIN ] --INF-- From FIS downloaded order: {order.Oid} with barcode{order.Barcode} and ID {temporary}", logger);
                         orders.Add(order);
                     }
 
