@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 
 namespace zapsi_service_optimont_importer {
     class Program {
-        private const string BuildDate = "2019.4.2.27";
+        private const string BuildDate = "2020.1.1.7";
         private const string DataFolder = "Logs";
         private const string RedColor = "\u001b[31;1m";
         private const string YellowColor = "\u001b[33;1m";
@@ -410,7 +410,7 @@ namespace zapsi_service_optimont_importer {
             try {
                 connection.Open();
                 var command = connection.CreateCommand();
-                command.CommandText = $"UPDATE zapsi2.order set CountRequested = {order.RequestedAmount} where Barcode = {order.Barcode}";
+                command.CommandText = $"UPDATE zapsi2.order set CountRequested = {order.RequestedAmount} where Oid = {order.Oid}";
 
                 try {
                     command.ExecuteNonQuery();
@@ -527,7 +527,7 @@ namespace zapsi_service_optimont_importer {
                 try {
                     var reader = command.ExecuteReader();
                     while (reader.Read()) {
-                        var actualOid = Convert.ToString(reader["Barcode"]);
+                        var actualOid = Convert.ToString(reader["OID"]);
                         orderOiDs.Add(actualOid);
                     }
 
