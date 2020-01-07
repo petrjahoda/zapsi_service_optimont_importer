@@ -527,7 +527,7 @@ namespace zapsi_service_optimont_importer {
                 try {
                     var reader = command.ExecuteReader();
                     while (reader.Read()) {
-                        var actualOid = Convert.ToString(reader["OID"]);
+                        var actualOid = Convert.ToString(reader["Name"]);
                         orderOiDs.Add(actualOid);
                     }
 
