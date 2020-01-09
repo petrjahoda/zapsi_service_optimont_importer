@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 
 namespace zapsi_service_optimont_importer {
     class Program {
-        private const string BuildDate = "2020.1.1.7";
+        private const string BuildDate = "2020.1.1.9";
         private const string DataFolder = "Logs";
         private const string RedColor = "\u001b[31;1m";
         private const string YellowColor = "\u001b[33;1m";
@@ -395,11 +395,12 @@ namespace zapsi_service_optimont_importer {
             var zapsiOrders = DownloadActualOrdersFromZapsi(logger);
             LogInfo($"[ MAIN ] --INF-- Comparing orders: " + fisOrders.Count + "-" + zapsiOrders.Count, logger);
             foreach (var order in fisOrders) {
+                LogInfo($"[ MAIN ] --INF-- Processing: {order.Oid} with barcode {order.Barcode}", logger);
                 if (!zapsiOrders.Contains(order.Oid)) {
                     LogInfo($"[ MAIN ] --INF-- Adding order: {order.Oid} with barcode{order.Barcode}", logger);
                     CreateNewOrderInZapsi(order, logger);
-                }
-                if (zapsiOrders.Contains(order.Oid)) {
+                } else {
+                    LogInfo($"[ MAIN ] --INF-- Updating order: {order.Oid} with barcode {order.Barcode}", logger);
                     UpdateZapsiOrder(order, logger);
                 }
             }
@@ -410,8 +411,8 @@ namespace zapsi_service_optimont_importer {
             try {
                 connection.Open();
                 var command = connection.CreateCommand();
-                command.CommandText = $"UPDATE zapsi2.order set CountRequested = {order.RequestedAmount} where Oid = {order.Oid}";
-
+                command.CommandText = $"UPDATE zapsi2.order set CountRequested = {order.RequestedAmount}, Barcode = {order.Barcode} where Name = '{order.Oid}'";
+                LogInfo($"[ MAIN ] {command.CommandText}", logger);
                 try {
                     command.ExecuteNonQuery();
                 } catch (Exception error) {
@@ -560,13 +561,13 @@ namespace zapsi_service_optimont_importer {
                     var reader = command.ExecuteReader();
                     while (reader.Read()) {
                         var order = new Order();
-                        var temporary = Convert.ToString(reader["ID"]);
+                        var temporary = Convert.ToString(reader["IDVC"]);
                         order.ProductId = Convert.ToString(reader["IDVM"]);
                         order.WorkplaceId = Convert.ToString(reader["IDVC"]);
-                        order.Barcode = Convert.ToString(reader["IDVC"]);
+                        order.Barcode = Convert.ToString(reader["ID"]);
                         order.RequestedAmount = Convert.ToString(reader["Mnozstvi"]);
-                        order.Oid = temporary + "-" + order.Barcode;
-                        LogInfo($"[ MAIN ] --INF-- From FIS downloaded order: {order.Oid} with barcode{order.Barcode} and ID {temporary}", logger);
+                        order.Oid = order.Barcode + "-" + temporary;
+                        LogInfo($"[ MAIN ] --INF-- From FIS downloaded order: {order.Oid} with barcode {order.Barcode}", logger);
                         orders.Add(order);
                     }
 
