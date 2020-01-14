@@ -137,6 +137,7 @@ namespace zapsi_service_optimont_importer {
             try {
                 connection.Open();
                 var command = connection.CreateCommand();
+
                 command.CommandText =
                     $"INSERT INTO `zapsi2`.`fis_production` (`IDFis`,`TerminalInputOrderId`, `DatumCasOd`, `DatumCasDo`, `IDZ`, `IDVC`, `IDS`, `IDOper`, `MnozstviOK`, `MnozstviNOK`, `KgOK`, `KgNOK`,`Prenos`) " +
                     $"VALUES ({order.Name},'{order.TerminalInputOrderId}', '{startDate}', '{endDate}', '{order.IDZ}', {order.IDVC}, {order.IDS}, NULL, {okCount}, {order.NOK}, {okInKg}, NULL, b'0');";
@@ -265,7 +266,12 @@ namespace zapsi_service_optimont_importer {
             } finally {
                 connection.Dispose();
             }
-
+            try {
+                var splittedOrder = orderIDVC.Split("-");
+                return splittedOrder[1];
+            } catch (Exception e) {
+                LogError("[ MAIN ] --ERR-- Problem parsing order name: " + e.Message, logger);
+            }
             return orderIDVC;
         }
 
