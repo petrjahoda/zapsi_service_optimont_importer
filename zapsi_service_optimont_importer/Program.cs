@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 
 namespace zapsi_service_optimont_importer {
     class Program {
-        private const string BuildDate = "2020.1.1.9";
+        private const string BuildDate = "2020.1.1.16";
         private const string DataFolder = "Logs";
         private const string RedColor = "\u001b[31;1m";
         private const string YellowColor = "\u001b[33;1m";
@@ -140,7 +140,7 @@ namespace zapsi_service_optimont_importer {
 
                 command.CommandText =
                     $"INSERT INTO `zapsi2`.`fis_production` (`IDFis`,`TerminalInputOrderId`, `DatumCasOd`, `DatumCasDo`, `IDZ`, `IDVC`, `IDS`, `IDOper`, `MnozstviOK`, `MnozstviNOK`, `KgOK`, `KgNOK`,`Prenos`) " +
-                    $"VALUES ({order.Name},'{order.TerminalInputOrderId}', '{startDate}', '{endDate}', '{order.IDZ}', {order.IDVC}, {order.IDS}, NULL, {okCount}, {order.NOK}, {okInKg}, NULL, b'0');";
+                    $"VALUES ({order.FisOrderId},'{order.TerminalInputOrderId}', '{startDate}', '{endDate}', '{order.IDZ}', {order.IDVC}, {order.IDS}, NULL, {okCount}, {order.NOK}, {okInKg}, NULL, b'0');";
                 try {
                     command.ExecuteNonQuery();
                 } catch (Exception error) {
@@ -164,9 +164,9 @@ namespace zapsi_service_optimont_importer {
                 string orderWorkplace = GetWorkplaceFromZapsiData(order.IDS, logger);
                 string orderName = GetOrderNameFromZapsiData(order.ZapsiOrderId, logger);
                 order.IDZ = orderUser;
-                order.IDVC = orderBarcode;
+                order.IDVC = orderName;
                 order.IDS = orderWorkplace;
-                order.Name = orderName;
+                order.FisOrderId = orderBarcode;
             }
         }
 
@@ -401,12 +401,12 @@ namespace zapsi_service_optimont_importer {
             var zapsiOrders = DownloadActualOrdersFromZapsi(logger);
             LogInfo($"[ MAIN ] --INF-- Comparing orders: " + fisOrders.Count + "-" + zapsiOrders.Count, logger);
             foreach (var order in fisOrders) {
-                LogInfo($"[ MAIN ] --INF-- Processing: {order.Oid} with barcode {order.Barcode}", logger);
-                if (!zapsiOrders.Contains(order.Oid)) {
-                    LogInfo($"[ MAIN ] --INF-- Adding order: {order.Oid} with barcode{order.Barcode}", logger);
+                LogInfo($"[ MAIN ] --INF-- Processing: {order.Name} with barcode {order.Barcode}", logger);
+                if (!zapsiOrders.Contains(order.Barcode)) {
+                    LogInfo($"[ MAIN ] --INF-- Adding order: {order.Name} with barcode{order.Barcode}", logger);
                     CreateNewOrderInZapsi(order, logger);
                 } else {
-                    LogInfo($"[ MAIN ] --INF-- Updating order: {order.Oid} with barcode {order.Barcode}", logger);
+                    LogInfo($"[ MAIN ] --INF-- Updating order: {order.Name} with barcode {order.Barcode}", logger);
                     UpdateZapsiOrder(order, logger);
                 }
             }
@@ -417,7 +417,7 @@ namespace zapsi_service_optimont_importer {
             try {
                 connection.Open();
                 var command = connection.CreateCommand();
-                command.CommandText = $"UPDATE zapsi2.order set CountRequested = {order.RequestedAmount}, Barcode = {order.Barcode} where Name = '{order.Oid}'";
+                command.CommandText = $"UPDATE zapsi2.order set CountRequested = {order.RequestedAmount}, Name = {order.Name} where Barcode = '{order.Barcode}' ";
                 LogInfo($"[ MAIN ] {command.CommandText}", logger);
                 try {
                     command.ExecuteNonQuery();
@@ -443,12 +443,12 @@ namespace zapsi_service_optimont_importer {
                 connection.Open();
                 var command = connection.CreateCommand();
                 command.CommandText = $"INSERT INTO `zapsi2`.`order` (`Name`, `Barcode`, `ProductID`, `OrderStatusID`, `CountRequested`, `WorkplaceID`) " +
-                                      $"VALUES ('{order.Oid}', '{order.Barcode}', {updatedProductId}, DEFAULT, {order.RequestedAmount}, NULL);";
+                                      $"VALUES ('{order.Name}', '{order.Barcode}', {updatedProductId}, DEFAULT, {order.RequestedAmount}, NULL);";
                 try {
                     command.ExecuteNonQuery();
-                    LogInfo($"[  {order.Oid} ] --INF-- Added from FIS to Zapsi", logger);
+                    LogInfo($"[  {order.Name} ] --INF-- Added from FIS to Zapsi", logger);
                 } catch (Exception error) {
-                    LogError($"[ {order.Oid} ] --ERR-- Problem inserting into database: {error.Message}{command.CommandText}", logger);
+                    LogError($"[ {order.Name} ] --ERR-- Problem inserting into database: {error.Message}{command.CommandText}", logger);
                 } finally {
                     command.Dispose();
                 }
@@ -534,7 +534,7 @@ namespace zapsi_service_optimont_importer {
                 try {
                     var reader = command.ExecuteReader();
                     while (reader.Read()) {
-                        var actualOid = Convert.ToString(reader["Name"]);
+                        var actualOid = Convert.ToString(reader["Barcode"]);
                         orderOiDs.Add(actualOid);
                     }
 
@@ -567,13 +567,11 @@ namespace zapsi_service_optimont_importer {
                     var reader = command.ExecuteReader();
                     while (reader.Read()) {
                         var order = new Order();
-                        var temporary = Convert.ToString(reader["IDVC"]);
+                        order.Name = Convert.ToString(reader["IDVC"]);
                         order.ProductId = Convert.ToString(reader["IDVM"]);
-                        order.WorkplaceId = Convert.ToString(reader["IDVC"]);
                         order.Barcode = Convert.ToString(reader["ID"]);
                         order.RequestedAmount = Convert.ToString(reader["Mnozstvi"]);
-                        order.Oid = order.Barcode + "-" + temporary;
-                        LogInfo($"[ MAIN ] --INF-- From FIS downloaded order: {order.Oid} with barcode {order.Barcode}", logger);
+                        LogInfo($"[ MAIN ] --INF-- From FIS downloaded order: {order.Name} with barcode {order.Barcode}", logger);
                         orders.Add(order);
                     }
 
