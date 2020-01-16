@@ -140,7 +140,7 @@ namespace zapsi_service_optimont_importer {
 
                 command.CommandText =
                     $"INSERT INTO `zapsi2`.`fis_production` (`IDFis`,`TerminalInputOrderId`, `DatumCasOd`, `DatumCasDo`, `IDZ`, `IDVC`, `IDS`, `IDOper`, `MnozstviOK`, `MnozstviNOK`, `KgOK`, `KgNOK`,`Prenos`) " +
-                    $"VALUES ({order.FisOrderId},'{order.TerminalInputOrderId}', '{startDate}', '{endDate}', '{order.IDZ}', {order.IDVC}, {order.IDS}, NULL, {okCount}, {order.NOK}, {okInKg}, NULL, b'0');";
+                    $"VALUES ({order.FisOrderId},'{order.TerminalInputOrderId}', '{startDate}', '{endDate}', '{order.IDZ}', '{order.IDVC}', {order.IDS}, NULL, {okCount}, {order.NOK}, {okInKg}, NULL, b'0');";
                 try {
                     command.ExecuteNonQuery();
                 } catch (Exception error) {
@@ -417,7 +417,7 @@ namespace zapsi_service_optimont_importer {
             try {
                 connection.Open();
                 var command = connection.CreateCommand();
-                command.CommandText = $"UPDATE zapsi2.order set CountRequested = {order.RequestedAmount}, Name = {order.Name} where Barcode = '{order.Barcode}' ";
+                command.CommandText = $"UPDATE zapsi2.order set CountRequested = {order.RequestedAmount}, Name = '{order.Name}' where Barcode = '{order.Barcode}' ";
                 LogInfo($"[ MAIN ] {command.CommandText}", logger);
                 try {
                     command.ExecuteNonQuery();
