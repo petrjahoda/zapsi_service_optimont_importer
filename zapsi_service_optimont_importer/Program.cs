@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 
 namespace zapsi_service_optimont_importer {
     class Program {
-        private const string BuildDate = "2020.1.1.16";
+        private const string BuildDate = "2020.1.2.11";
         private const string DataFolder = "Logs";
         private const string RedColor = "\u001b[31;1m";
         private const string YellowColor = "\u001b[33;1m";
@@ -613,7 +613,7 @@ namespace zapsi_service_optimont_importer {
                 connection.Open();
                 var command = connection.CreateCommand();
                 command.CommandText = $"INSERT INTO `zapsi2`.`product` (`Name`, `Barcode`, `Cycle`, `IdleFromTime`, `ProductStatusID`, `Deleted`, `ProductGroupID`) " +
-                                      $"VALUES ('{product.Name}', '{product.ArtNr}', DEFAULT, null, DEFAULT, DEFAULT, null);";
+                                      $"VALUES ('{product.Name}, {product.Dimensions}', '{product.ArtNr}', DEFAULT, null, DEFAULT, DEFAULT, null);";
                 try {
                     command.ExecuteNonQuery();
                     LogInfo($"[  {product.Name} ] --INF-- Added from FIS to Zapsi", logger);

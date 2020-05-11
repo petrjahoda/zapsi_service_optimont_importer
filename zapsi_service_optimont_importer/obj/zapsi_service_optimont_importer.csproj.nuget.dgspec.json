@@ -14,7 +14,7 @@
         "outputPath": "/Users/petrjahoda/RiderProjects/zapsi_service_optimont_importer/zapsi_service_optimont_importer/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/petrjahoda/.config/NuGet/NuGet.Config"
+          "/Users/petrjahoda/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "netcoreapp2.2"
