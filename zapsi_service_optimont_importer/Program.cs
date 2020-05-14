@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 
 namespace zapsi_service_optimont_importer {
     class Program {
-        private const string BuildDate = "2020.1.2.11";
+        private const string BuildDate = "2020.2.2.14";
         private const string DataFolder = "Logs";
         private const string RedColor = "\u001b[31;1m";
         private const string YellowColor = "\u001b[33;1m";
@@ -603,7 +603,32 @@ namespace zapsi_service_optimont_importer {
             foreach (var product in fisProducts) {
                 if (!zapsiProducts.Contains(product.ArtNr)) {
                     CreateNewProductInZapsi(product, logger);
+                } else {
+                    UpdateProductInZapsi(product, logger);
                 }
+            }
+        }
+
+        private static void UpdateProductInZapsi(Product product, ILogger logger) {
+            var connection = new MySqlConnection($"server={_ipAddress};port={_port};userid={_login};password={_password};database={_database};");
+            try {
+                connection.Open();
+                var command = connection.CreateCommand();
+                command.CommandText = $"UPDATE `zapsi2`.`product` SET `Name` = '{product.Name}, {product.Dimensions}' WHERE Barcode = {product.ArtNr};";
+                try {
+                    command.ExecuteNonQuery();
+                    LogInfo($"[  {product.Name} ] --INF-- Product {product.Name}, {product.Dimensions} updated", logger);
+                } catch (Exception error) {
+                    LogError($"[ {product.Name} ] --ERR-- Problem inserting into database: {error.Message}{command.CommandText}", logger);
+                } finally {
+                    command.Dispose();
+                }
+
+                connection.Close();
+            } catch (Exception error) {
+                LogError("[ MAIN ] --ERR-- Problem with database: " + error.Message, logger);
+            } finally {
+                connection.Dispose();
             }
         }
 

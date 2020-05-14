@@ -1,0 +1,3 @@
+2020-05-14T11:51:52.8201780+02:00  [INF] 05/14/2020 11:51:52 [ MAIN ] --INF-- Program built at: 2020.2.2.14 (4ee054f6)
+2020-05-14T11:51:52.8271880+02:00  [INF] 05/14/2020 11:51:52 [ MAIN ] --INF-- Config file already exists. (6a7860f0)
+2020-05-14T11:51:52.8949580+02:00  [INF] 05/14/2020 11:51:52 [ MAIN ] --INF-- Config loaded from file for customer: unactivatedsoftware (efcb9535)
