@@ -614,10 +614,10 @@ namespace zapsi_service_optimont_importer {
             try {
                 connection.Open();
                 var command = connection.CreateCommand();
-                command.CommandText = $"UPDATE `zapsi2`.`product` SET `Name` = '{product.Name}, {product.Dimensions}' WHERE Barcode = {product.ArtNr};";
+                command.CommandText = $"UPDATE `zapsi2`.`product` SET `Name` = '{product.Name}, {product.Dimensions}' WHERE Barcode = '{product.ArtNr}';";
                 try {
                     command.ExecuteNonQuery();
-                    LogInfo($"[  {product.Name} ] --INF-- Product {product.Name}, {product.Dimensions} updated", logger);
+                    LogInfo($"[  {product.Name} ] --INF-- Product {product.Name}, {product.Dimensions} with barcode {product.ArtNr}updated", logger);
                 } catch (Exception error) {
                     LogError($"[ {product.Name} ] --ERR-- Problem inserting into database: {error.Message}{command.CommandText}", logger);
                 } finally {
