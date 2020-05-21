@@ -614,7 +614,7 @@ namespace zapsi_service_optimont_importer {
             try {
                 connection.Open();
                 var command = connection.CreateCommand();
-                command.CommandText = $"UPDATE `zapsi2`.`product` SET `Name` = '{product.Name}, {product.Dimensions}' WHERE Barcode = '{product.ArtNr}';";
+                command.CommandText = $"UPDATE `zapsi2`.`product` SET `Name` = '{product.Name} {product.Dimensions}' WHERE Barcode = '{product.ArtNr}';";
                 try {
                     command.ExecuteNonQuery();
                     LogInfo($"[  {product.Name} ] --INF-- Product {product.Name}, {product.Dimensions} with barcode {product.ArtNr}updated", logger);
@@ -638,7 +638,7 @@ namespace zapsi_service_optimont_importer {
                 connection.Open();
                 var command = connection.CreateCommand();
                 command.CommandText = $"INSERT INTO `zapsi2`.`product` (`Name`, `Barcode`, `Cycle`, `IdleFromTime`, `ProductStatusID`, `Deleted`, `ProductGroupID`) " +
-                                      $"VALUES ('{product.Name}, {product.Dimensions}', '{product.ArtNr}', DEFAULT, null, DEFAULT, DEFAULT, null);";
+                                      $"VALUES ('{product.Name} {product.Dimensions}', '{product.ArtNr}', DEFAULT, null, DEFAULT, DEFAULT, null);";
                 try {
                     command.ExecuteNonQuery();
                     LogInfo($"[  {product.Name} ] --INF-- Added from FIS to Zapsi", logger);
