@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 
 namespace zapsi_service_optimont_importer {
     class Program {
-        private const string BuildDate = "2020.2.2.14";
+        private const string BuildDate = "2020.3.1.21";
         private const string DataFolder = "Logs";
         private const string RedColor = "\u001b[31;1m";
         private const string YellowColor = "\u001b[33;1m";
@@ -70,8 +70,8 @@ namespace zapsi_service_optimont_importer {
                         TransferOrders(logger);
                         LogInfo($"[ MAIN ] --INF-- Updating fis_production table", logger);
                         UpdateFisProductionTable(logger);
-//                        LogInfo($"[ MAIN ] --INF-- Deleting fis_production records with Prenos=1", logger);
-//                        DeletePrenosRecords(logger);
+                        LogInfo($"[ MAIN ] --INF-- Deleting fis_production records with Prenos=1", logger);
+                        // DeletePrenosRecords(logger);
                         LogInfo($"[ MAIN ] --INF-- Deleting old log data", logger);
                         DeleteOldLogFiles(logger);
                         _loopIsRunning = false;
@@ -733,7 +733,7 @@ namespace zapsi_service_optimont_importer {
             foreach (var user in fisUsers) {
                 if (zapsiUsers.Contains(user.Oid.ToString())) {
 //                    DISABLED, will be ENABLED when RFID is inserted into fis_user
-//                    UpdateUserInZapsi(user, logger);
+                    UpdateUserInZapsi(user, logger);
                 } else {
                     CreateNewUserInZapsi(user, logger);
                 }
@@ -774,7 +774,7 @@ namespace zapsi_service_optimont_importer {
             try {
                 connection.Open();
                 var command = connection.CreateCommand();
-                command.CommandText = $"UPDATE zapsi2.user set zapsi2.user.Rfid = {user.RFID} where Login = {user.Oid}";
+                command.CommandText = $"UPDATE zapsi2.user set zapsi2.user.Rfid = '{user.RFID}' where Login = {user.Oid}";
 
                 try {
                     command.ExecuteNonQuery();
